@@ -9,6 +9,8 @@ public class RubyController : MonoBehaviour
     public int maxHealth = 5;
     
     public GameObject projectilePrefab;
+
+    public GameObject DamagePrefab;
     
     public int health { get { return currentHealth; }}
     int currentHealth;
@@ -102,7 +104,9 @@ public class RubyController : MonoBehaviour
             
             isInvincible = true;
             invincibleTimer = timeInvincible;
+            animator.SetTrigger("Hit");
             audioSource.PlayOneShot(TakeDamage);
+            Instantiate(DamagePrefab, transform.position, Quaternion.identity);
         }
         
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
