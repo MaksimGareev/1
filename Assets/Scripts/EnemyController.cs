@@ -18,6 +18,7 @@ public class EnemyController : MonoBehaviour
     Animator animator;
     AudioSource audioSource;
     public AudioClip FixClip; 
+    private FixManager FixManager;
     
     // Start is called before the first frame update
     void Start()
@@ -26,6 +27,7 @@ public class EnemyController : MonoBehaviour
         timer = changeTime;
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
+        FixManager = FixManager.instance;
     }
 
     void Update()
@@ -93,6 +95,9 @@ public class EnemyController : MonoBehaviour
         audioSource.Play();
 
         smokeEffect.Stop();
+
+        FixManager.IncrementFixetRobotsCount();
+        
         
     }
 }
