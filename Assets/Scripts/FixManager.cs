@@ -8,6 +8,8 @@ public class FixManager : MonoBehaviour
     public Text fixedRobotsText;
     private int fixedRobotsCount = 0;
 
+    public int totalRobotsCount;
+
     public static FixManager instance;
 
     // Start is called before the first frame update
@@ -32,5 +34,10 @@ public class FixManager : MonoBehaviour
     private void UpdateFixedRobotsText()
     {
         fixedRobotsText.text = "Fixed Robots: " + fixedRobotsCount;
+    }
+
+    public bool AllRobotsFixed()
+    {
+        return fixedRobotsCount >= totalRobotsCount;
     }
 }
