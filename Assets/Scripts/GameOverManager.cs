@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +7,7 @@ public class GameOverManager : MonoBehaviour
 {
     public GameObject player;
     public GameObject gameOverText;
+    public AudioSource gameOverSound;
 
     bool gameOver = false;
 
@@ -27,14 +27,19 @@ public class GameOverManager : MonoBehaviour
     public void EndGame()
     {
         gameOver = true;
-        player.GetComponent<RubyController>().enabled = false;
+        if (player.GetComponent<RubyController>().CurrentHealth <= 0) // Accessing CurrentHealth
+        {
+            player.GetComponent<RubyController>().enabled = false;
+        }
         gameOverText.SetActive(true);
+        if (gameOverSound != null)
+        {
+            gameOverSound.Play();
+        }
     }
 
     void RestartGame()
-    {
-        
+    {   
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 }
-

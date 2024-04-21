@@ -5,6 +5,8 @@ using UnityEngine;
 public class RubyController : MonoBehaviour
 {
     public float speed = 3.0f;
+    public float maxSpeed = 5.0f; 
+    public float slowedSpeed = 1.5f; 
     public int maxHealth = 5;
     public GameObject projectilePrefab;
     public GameObject damagePrefab;
@@ -12,16 +14,20 @@ public class RubyController : MonoBehaviour
     public AudioClip takeDamage;
 
     int currentHealth;
-    float horizontal;
-    float vertical;
     bool isInvincible;
     float invincibleTimer;
     Rigidbody2D rigidbody2d;
     Animator animator;
     AudioSource audioSource;
-    GameOverManager gameOverManager; 
+    GameOverManager gameOverManager;
 
     Vector2 lookDirection = new Vector2(1, 0);
+    bool isSlowed = false; 
+
+    public int CurrentHealth // Public getter method for currentHealth
+    {
+        get { return currentHealth; }
+    }
 
     void Start()
     {
@@ -29,8 +35,6 @@ public class RubyController : MonoBehaviour
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         currentHealth = maxHealth;
-
-        
         gameOverManager = FindObjectOfType<GameOverManager>();
     }
 
@@ -38,20 +42,19 @@ public class RubyController : MonoBehaviour
     {
         if (!isInvincible)
         {
-            horizontal = Input.GetAxis("Horizontal");
-            vertical = Input.GetAxis("Vertical");
+            float horizontal = Input.GetAxis("Horizontal");
+            float vertical = Input.GetAxis("Vertical");
 
-            Vector2 move = new Vector2(horizontal, vertical);
+            Vector2 move = new Vector2(horizontal, vertical).normalized;
 
-            if (!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f))
+            if (move != Vector2.zero)
             {
-                lookDirection.Set(move.x, move.y);
-                lookDirection.Normalize();
+                lookDirection = move;
             }
 
             animator.SetFloat("Look X", lookDirection.x);
             animator.SetFloat("Look Y", lookDirection.y);
-            animator.SetFloat("Speed", move.magnitude);
+            animator.SetFloat("Speed", Mathf.Clamp(move.magnitude, 0.0f, 1.0f) * (isSlowed ? slowedSpeed : 1.0f)); 
 
             if (Input.GetKeyDown(KeyCode.C))
             {
@@ -77,11 +80,16 @@ public class RubyController : MonoBehaviour
     {
         if (!isInvincible)
         {
-            Vector2 position = rigidbody2d.position;
-            position.x = position.x + speed * horizontal * Time.deltaTime;
-            position.y = position.y + speed * vertical * Time.deltaTime;
+            float horizontal = Input.GetAxis("Horizontal");
+            float vertical = Input.GetAxis("Vertical");
 
-            rigidbody2d.MovePosition(position);
+            Vector2 move = new Vector2(horizontal, vertical).normalized * (isSlowed ? slowedSpeed : 1.0f); 
+            rigidbody2d.velocity = move * speed;
+
+            if (rigidbody2d.velocity.magnitude > maxSpeed)
+            {
+                rigidbody2d.velocity = rigidbody2d.velocity.normalized * maxSpeed;
+            }
         }
     }
 
@@ -98,11 +106,14 @@ public class RubyController : MonoBehaviour
             audioSource.PlayOneShot(takeDamage);
             Instantiate(damagePrefab, transform.position, Quaternion.identity);
 
-            
             if (currentHealth + amount <= 0)
             {
-                
                 gameOverManager.EndGame();
+            }
+
+            if (amount > 0)
+            {
+                isInvincible = false;
             }
         }
 
@@ -113,10 +124,8 @@ public class RubyController : MonoBehaviour
     void Launch()
     {
         GameObject projectileObject = Instantiate(projectilePrefab, rigidbody2d.position + Vector2.up * 0.5f, Quaternion.identity);
-
         Projectile projectile = projectileObject.GetComponent<Projectile>();
         projectile.Launch(lookDirection, 300);
-
         animator.SetTrigger("Launch");
         audioSource.PlayOneShot(throwCog);
     }
@@ -124,5 +133,19 @@ public class RubyController : MonoBehaviour
     public void PlaySound(AudioClip clip)
     {
         audioSource.PlayOneShot(clip);
+    }
+
+    
+    public void ApplySpeedModifier(float modifier)
+    {
+        speed *= modifier;
+        isSlowed = true; 
+    }
+
+    
+    public void RemoveSpeedModifier(float modifier)
+    {
+        speed /= modifier;
+        isSlowed = false; 
     }
 }

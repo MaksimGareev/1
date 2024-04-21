@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class WinUIManager : MonoBehaviour
 {
     public Text winText;
+    public AudioSource winSound;
 
     void Start()
     {
@@ -17,6 +18,10 @@ public class WinUIManager : MonoBehaviour
     {
         winText.enabled = true;
         winText.text = "You Win! Game Created by <Team 42>";
+        if (winSound !=null)
+        {
+            winSound.Play();
+        }
     }
 
     
